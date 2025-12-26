@@ -30,6 +30,7 @@ const formatCurrency = (value: number) =>
         currency: 'IDR',
         maximumFractionDigits: 0
     }).format(value)
+
 </script>
 
 <template>
@@ -52,13 +53,17 @@ const formatCurrency = (value: number) =>
 
         <!-- Program Cards -->
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <UCard v-for="program in programData" :key="program.id" class="overflow-hidden hover:shadow-lg transition">
+            <UCard v-for="program in programData" :key="program.id" class="overflow-hidden hover:shadow-lg transition"
+                :ui="{ body: 'p-0 sm:p-0' }">
                 <!-- Cover Image -->
-                <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1200" alt="Program Cover"
-                    class="h-40 w-full object-cover" />
+                <div class="relative overflow-hidden rounded-t-lg h-48">
+                    <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1200"
+                        alt="Program Cover"
+                        class="w-full h-full object-cover transition duration-500 group-hover:scale-105" />
+                </div>
 
                 <!-- Content -->
-                <div class="p-4 space-y-3">
+                <div class="space-y-3 p-4">
                     <h3 class="text-lg font-semibold leading-tight">
                         {{ program.name }}
                     </h3>
@@ -75,7 +80,7 @@ const formatCurrency = (value: number) =>
                     <!-- Price -->
                     <div class="flex items-center justify-between pt-2">
                         <div>
-                            <p class="text-xs text-gray-500">Harga Program</p>
+                            <p class="text-xs text-gray-500">Price</p>
                             <p class="font-semibold text-indigo-600 dark:text-indigo-400">
                                 {{ formatCurrency(program.onetime_price) }}
                             </p>

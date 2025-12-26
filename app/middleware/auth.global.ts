@@ -1,24 +1,24 @@
 export default defineNuxtRouteMiddleware(async (to) => {
     const auth = useAuthStore()
 
-    // halaman publik
     const publicPages = ['/login']
     const isPublic = publicPages.includes(to.path)
 
-    // sudah punya user → lanjut
+    // SSR-safe: jika sudah ada user di store
     if (auth.user) {
+        if (isPublic) {
+            return navigateTo('/dashboard')
+        }
         return
     }
 
     try {
-        // cek session ke server (SSR-safe)
         await auth.fetchUser()
 
         if (!auth.user && !isPublic) {
             return navigateTo('/login')
         }
 
-        // sudah login tapi buka /login → redirect
         if (auth.user && isPublic) {
             return navigateTo('/dashboard')
         }

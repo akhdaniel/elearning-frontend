@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
         list_price: {},
         tuition_fee: {},
         onetime_price: {},
+        cover_image2: {},
     }
 
     if (!sessionId) {

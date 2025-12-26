@@ -6,7 +6,7 @@ export default defineAppConfig({
         },
         dashboardPanel: {
             slots: {
-                body: 'flex flex-col gap-4 sm:gap-6 flex-1 overflow-y-auto'
+                body: 'bg-neutral-100 dark:bg-neutral-800'
             }
         }
     }

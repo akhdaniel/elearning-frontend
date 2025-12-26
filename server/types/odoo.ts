@@ -29,6 +29,7 @@ export type VitProgram = {
     list_price: number
     tuition_fee: number
     onetime_price: number
+    cover_image2: any
 }
 
 export type VitCourse = {

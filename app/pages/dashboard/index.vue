@@ -9,7 +9,7 @@ const stats = [
     { label: 'Average Progress', value: '68%', icon: 'i-heroicons-chart-bar' }
 ]
 
-const recentCourses = [
+const recentCourses = ref([
     {
         title: 'Vue & Nuxt Fundamentals',
         category: 'Frontend Development',
@@ -28,13 +28,16 @@ const recentCourses = [
         progress: 90,
         instructor: 'Michael Lee'
     }
-]
+])
 
 const activities = [
     { text: 'You enrolled in "Vue & Nuxt Fundamentals"', time: '2 hours ago' },
     { text: 'You completed lesson "State Management"', time: 'Yesterday' },
     { text: 'New course available: "Advanced Tailwind"', time: '2 days ago' }
 ]
+
+const value2 = ref(50)
+
 </script>
 
 <template>
@@ -55,7 +58,7 @@ const activities = [
         <!-- Statistics -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div v-for="stat in stats" :key="stat.label"
-                class="bg-white dark:bg-neutral-950 rounded-xl p-5 shadow-sm border border-neutral-200/60 dark:border-neutral-800">
+                class="bg-white dark:bg-neutral-900 rounded-xl p-5 shadow-sm border border-neutral-200/60 dark:border-neutral-800">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-neutral-500 dark:text-neutral-400">{{ stat.label }}</p>
@@ -72,7 +75,7 @@ const activities = [
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Courses Progress -->
             <div
-                class="lg:col-span-2 bg-white dark:bg-neutral-950 rounded-xl shadow-sm p-6 border border-neutral-200/60 dark:border-neutral-800">
+                class="lg:col-span-2 bg-white dark:bg-neutral-900 rounded-xl shadow-sm p-6 border border-neutral-200/60 dark:border-neutral-800">
                 <h3 class="text-lg font-semibold mb-4">Your Courses</h3>
 
                 <div class="space-y-4">
@@ -93,7 +96,7 @@ const activities = [
                                 <span>Progress</span>
                                 <span>{{ course.progress }}%</span>
                             </div>
-                            <UProgress :value="course.progress" />
+                            <UProgress v-model="course.progress" />
                         </div>
                     </div>
                 </div>
@@ -101,7 +104,7 @@ const activities = [
 
             <!-- Recent Activities -->
             <div
-                class="bg-white dark:bg-neutral-950 rounded-xl shadow-sm p-6 border border-neutral-200/60 dark:border-neutral-800">
+                class="bg-white dark:bg-neutral-900 rounded-xl shadow-sm p-6 border border-neutral-200/60 dark:border-neutral-800">
                 <h3 class="text-lg font-semibold mb-4">Recent Activities</h3>
                 <ul class="space-y-4">
                     <li v-for="activity in activities" :key="activity.text" class="flex gap-3">
