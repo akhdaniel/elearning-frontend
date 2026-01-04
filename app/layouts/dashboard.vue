@@ -1,6 +1,7 @@
 <!-- layouts/dashboard.vue-->
 <script setup lang="ts">
 import type { NavigationMenuItem, DropdownMenuItem } from '@nuxt/ui'
+import type { BreadcrumbItem } from '@nuxt/ui'
 import { useRoute } from 'vue-router'
 const route = useRoute()
 const authStore = useAuthStore()
@@ -11,22 +12,23 @@ const showLogoutConfirm = ref(false)
 const sidebarMenuItems: NavigationMenuItem[] = [
     {
         label: 'Dashboard',
-        icon: 'i-heroicons-home',
-        to: '/dashboard'
+        icon: 'i-lucide-house',
+        to: '/dashboard',
+        meta: { title: 'Dashboard' }
     },
     {
         label: 'Program',
-        icon: 'i-heroicons-academic-cap',
+        icon: 'i-lucide-graduation-cap',
         to: '/dashboard/program'
     },
     {
         label: 'Course',
-        icon: 'i-heroicons-square-3-stack-3d',
+        icon: 'i-lucide-package-check',
         to: '/dashboard/course'
     },
     {
         label: 'Video',
-        icon: 'i-heroicons-video-camera',
+        icon: 'i-lucide-video',
         to: '/dashboard/video'
     },
 ]
@@ -73,6 +75,19 @@ const navbarTitle = computed(() => {
     return findMenuLabelByPath(route.path) ?? 'Dashboard'
 })
 
+const breadcrumbs = computed<BreadcrumbItem[]>(() => {
+    const matched = route.matched
+
+    const crumbs = matched
+        .map(r => r.meta?.breadcrumb)
+        .flat()
+        .filter(Boolean) as BreadcrumbItem[]
+
+    return crumbs.length
+        ? crumbs
+        : [{ label: navbarTitle.value }]
+})
+
 </script>
 
 <template>
@@ -106,6 +121,13 @@ const navbarTitle = computed(() => {
                             </UDropdownMenu>
                         </template>
                     </UDashboardNavbar>
+                    <UDashboardToolbar>
+                        <UBreadcrumb :items="breadcrumbs">
+                            <template #separator>
+                                <span class="mx-2 text-muted">/</span>
+                            </template>
+                        </UBreadcrumb>
+                    </UDashboardToolbar>
                 </template>
 
                 <template #body>

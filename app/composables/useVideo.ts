@@ -1,11 +1,17 @@
 // composables/useProgram.ts :
 import { ofetch } from "ofetch"
 
+interface VideoQuery {
+    page: number
+    limit: number
+}
+
 export function useVideo() {
-    const getAllVideo = async () => {
+    const getAllVideo = async (query: VideoQuery) => {
         const res = await ofetch(`/api/video/get-all-video`, {
             method: "POST",
             credentials: "include",
+            body: query
         })
         return res.data
     }

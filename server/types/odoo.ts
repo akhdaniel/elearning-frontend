@@ -24,12 +24,12 @@ export type VitProgram = {
     description: string
     summary: string
     active: boolean
-    instructor_id: object
+    instructor_id: any
     currency_id: object
     list_price: number
     tuition_fee: number
     onetime_price: number
-    cover_image2: any
+    cover_image2: string | null
 }
 
 export type VitCourse = {
@@ -53,4 +53,41 @@ export type VitCourse = {
 export type VitVideo = {
     id: number
     name: string
+    sequence: number
+    keywords: string
+    coding: string
+    coding_explain: string
+    duration: number
+    coding_explain_orig: string
+    is_allow_preview: boolean,
+    is_quiz: boolean,
+    level: number
+    is_free_preview: boolean,
+    is_standalone: boolean,
+    list_price: number
+    is_generate_coding_exlain: boolean,
+    active: boolean,
+    topic_id: object,
+    program_id: object,
+    course_id: object,
+    audio_voice_id: object,
+    prompt_id: object,
+    survey_id: object,
+    currency_id: object,
+    product_fee_id: object,
+    media_type_id: object,
+    image: string,
+    image_small: string,
+    content: string,
+    url: string,
+    audio_file: string,
+    image_file: string,
+    video_file: string,
+    my_progress: number,
+    progressColor: string,
+    quiz_result: number,
+    allow_view: boolean,
+    doc_cover: string,
+    doc_file: string,
+    pdf_link: string,
 }

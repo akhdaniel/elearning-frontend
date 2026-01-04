@@ -3,6 +3,8 @@ import { odoo } from '~/../server/services/odoo'
 
 export default defineEventHandler(async (event) => {
     const sessionId = getCookie(event, 'session_id')
+    const params = event.context.params
+    const courseId = Number(params?.id)
 
     const specification = {
         id: {},
@@ -52,24 +54,12 @@ export default defineEventHandler(async (event) => {
     }
 
     await odoo.getSessionInfo(sessionId)
-    const body = await readBody(event)
-    const page = Number(body.page || 1)
-    const limit = Number(body.limit || 9)
-    const search = body.search || ''
-
-    const offset = (page - 1) * limit
-
-    const domain: any[] = []
-    if (search) {
-        domain.push(['name', 'ilike', search])
-    }
-
-    const response = await odoo.webSearchRead("vit.course", domain, specification, limit, offset, sessionId)
+    const ids: any[] = [courseId]
+    const response = await odoo.webRead("vit.course", ids, specification, sessionId)
 
     return {
         data: {
-            records: response.data.result.records,
-            total: response.data.result.length
+            records: response.data.result[0],
         }
     }
 })

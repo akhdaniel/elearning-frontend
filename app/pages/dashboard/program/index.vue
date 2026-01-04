@@ -1,19 +1,33 @@
 <script setup lang="ts">
+import type { VitProgram } from '~/../server/types/odoo'
 import { useProgram } from '~/composables/useProgram'
 
-definePageMeta({ layout: 'dashboard' })
+definePageMeta({
+    layout: 'dashboard'
+})
+
+useHead({
+    title: 'E-Learning System | Program'
+})
 
 const { getAllProgram } = useProgram()
 
-const programData = ref<any[]>([])
+const programData = ref<VitProgram[]>([])
 const isLoading = ref(true)
 const errorMessage = ref<string | null>(null)
+const page = ref(1)
+const perPage = 9
+const total = ref(0)
 
 const getAllPrograms = async () => {
     isLoading.value = true
     try {
-        const result = await getAllProgram()
-        programData.value = result
+        const res = await getAllProgram({
+            page: page.value,
+            limit: perPage
+        })
+        programData.value = res.records
+        total.value = res.total
     } catch (error) {
         errorMessage.value = 'Koneksi ke server gagal. Coba lagi nanti.'
         console.error(error)
@@ -22,7 +36,14 @@ const getAllPrograms = async () => {
     }
 }
 
-onMounted(getAllPrograms)
+onMounted(() => {
+    getAllPrograms()
+})
+
+watch([page], () => {
+    page.value = page.value < 1 ? 1 : page.value
+    getAllPrograms()
+})
 
 const formatCurrency = (value: number) =>
     new Intl.NumberFormat('id-ID', {
@@ -30,6 +51,13 @@ const formatCurrency = (value: number) =>
         currency: 'IDR',
         maximumFractionDigits: 0
     }).format(value)
+
+const getCoverImage = (cover: string | null) => {
+    if (!cover) {
+        return 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1200'
+    }
+    return `data:image/jpeg;base64,${cover}`
+}
 
 </script>
 
@@ -57,8 +85,7 @@ const formatCurrency = (value: number) =>
                 :ui="{ body: 'p-0 sm:p-0' }">
                 <!-- Cover Image -->
                 <div class="relative overflow-hidden rounded-t-lg h-48">
-                    <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1200"
-                        alt="Program Cover"
+                    <img :src="getCoverImage(program.cover_image2)" alt="Program Cover"
                         class="w-full h-full object-cover transition duration-500 group-hover:scale-105" />
                 </div>
 
@@ -92,6 +119,11 @@ const formatCurrency = (value: number) =>
                     </div>
                 </div>
             </UCard>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="total > perPage" class="flex justify-center pt-4">
+            <UPagination v-model:page="page" :items-per-page="perPage" :total="total" size="sm" />
         </div>
     </div>
 </template>

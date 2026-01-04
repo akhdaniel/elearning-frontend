@@ -101,7 +101,7 @@ export class Odoo {
     // ORM
     // =========================
 
-    async webSearchRead(model: string, domain: any[] = [], specification: any = {}, limit = 80, sessionId?: string) {
+    async webSearchRead(model: string, domain: any[] = [], specification: any = {}, limit = 9, offset = 0, sessionId?: string) {
         return this.request(`/web/dataset/call_kw/${model}/web_search_read`,
             {
                 method: 'POST',
@@ -113,7 +113,8 @@ export class Odoo {
                         kwargs: {
                             domain,
                             specification,
-                            limit
+                            limit,
+                            offset
                         }
                     }
                 }
@@ -122,7 +123,7 @@ export class Odoo {
         )
     }
 
-    async webRead(model: string, ids: any[], specification = {}, sessionId?: string) {
+    async webRead(model: string, ids: any[], specification: any = {}, sessionId?: string) {
         return this.request(`/web/dataset/call_kw/${model}/web_read`,
             {
                 method: 'POST',
@@ -130,6 +131,25 @@ export class Odoo {
                     params: {
                         model,
                         method: 'web_read',
+                        args: ids,
+                        kwargs: {
+                            specification
+                        }
+                    }
+                }
+            },
+            sessionId
+        )
+    }
+
+    async webSave(model: string, ids: any[], specification = {}, sessionId?: string) {
+        return this.request(`/web/dataset/call_kw/${model}/web_save`,
+            {
+                method: 'POST',
+                body: {
+                    params: {
+                        model,
+                        method: 'web_save',
                         args: ids,
                         kwargs: {
                             specification

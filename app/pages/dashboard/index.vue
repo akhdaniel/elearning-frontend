@@ -1,5 +1,11 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'dashboard' })
+definePageMeta({
+    layout: 'dashboard',
+})
+
+useHead({
+    title: 'E-Learning System | Dashboard'
+})
 
 // ===== Static dummy data =====
 const stats = [

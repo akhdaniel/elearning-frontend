@@ -1,30 +1,59 @@
+<!-- pages/dashboard/course/index.vue -->
 <script setup lang="ts">
-definePageMeta({ layout: 'dashboard' })
-
 import type { VitCourse } from '~/../server/types/odoo'
 import { useCourse } from '~/composables/useCourse'
 
+definePageMeta({
+    layout: 'dashboard',
+    breadcrumb: [
+        { label: 'Dashboard', to: '/dashboard' },
+        { label: 'Course' }
+    ]
+})
+
+useHead({
+    title: 'E-Learning System | Course'
+})
+
 const { getAllCourse } = useCourse()
 
-// ===== State =====
 const loading = ref(true)
 const courses = ref<VitCourse[]>([])
 const search = ref('')
 
-onMounted(async () => {
+const page = ref(1)
+const perPage = 9
+const total = ref(0)
+
+const fetchCourses = async () => {
+    loading.value = true
     try {
-        courses.value = await getAllCourse()
+        const res = await getAllCourse({
+            page: page.value,
+            limit: perPage,
+            search: search.value
+        })
+        courses.value = res.records
+        total.value = res.total
     } finally {
         loading.value = false
     }
+}
+
+onMounted(() => {
+    fetchCourses()
+})
+// Refetch saat page / search berubah
+watch([page, search], () => {
+    page.value = page.value < 1 ? 1 : page.value
+    fetchCourses()
 })
 
-const filteredCourses = computed(() => {
-    if (!search.value) return courses.value
-    return courses.value.filter(c =>
-        c.name.toLowerCase().includes(search.value.toLowerCase())
-    )
+// Reset page saat search
+watch(search, () => {
+    page.value = 1
 })
+
 </script>
 
 <template>
@@ -41,9 +70,6 @@ const filteredCourses = computed(() => {
             <div class="flex gap-3 w-full md:w-auto">
                 <UInput v-model="search" placeholder="Search course..." icon="i-heroicons-magnifying-glass"
                     class="w-full md:w-64" />
-                <UButton icon="i-heroicons-adjustments-horizontal" variant="outline">
-                    Filter
-                </UButton>
             </div>
         </div>
 
@@ -53,56 +79,70 @@ const filteredCourses = computed(() => {
         </div>
 
         <!-- Empty State -->
-        <UEmpty v-else-if="!filteredCourses.length" icon="i-heroicons-book-open" title="No courses found"
+        <UEmpty v-else-if="!courses.length" icon="i-heroicons-book-open" title="No courses found"
             description="Try adjusting your search or filter" />
 
         <!-- Course Grid -->
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <UCard v-for="course in filteredCourses" :key="course.id" class="flex flex-col">
-                <!-- Card Header -->
-                <template #header>
-                    <div class="flex items-start justify-between gap-2">
-                        <div>
-                            <h3 class="font-semibold leading-tight line-clamp-2">
-                                {{ course.name }}
-                            </h3>
-                            <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                                {{ course.program_id?.display_name || 'General Program' }}
+            <NuxtLink v-for="course in courses" :key="course.id" :to="`/dashboard/course/${course.id}`" class="block">
+
+                <UCard class="group flex flex-col h-full hover:shadow-lg transition-shadow">
+                    <div class="flex flex-col h-full">
+                        <!-- ===== Content Area ===== -->
+                        <div class="flex flex-col gap-4 flex-1">
+                            <!-- Status -->
+                            <UBadge :color="course.active ? 'success' : 'error'" variant="subtle" size="xs"
+                                class="w-fit">
+                                {{ course.active ? 'Active' : 'Inactive' }}
+                            </UBadge>
+
+                            <!-- Title & Program -->
+                            <div>
+                                <h3
+                                    class="font-semibold text-base leading-snug line-clamp-2 text-neutral-900 dark:text-neutral-100">
+                                    {{ course.name }}
+                                </h3>
+                                <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                                    {{ course.program_id?.display_name || 'General Program' }}
+                                </p>
+                            </div>
+
+                            <!-- Description (height normalized) -->
+                            <p class="text-sm text-neutral-600 dark:text-neutral-300 line-clamp-3 min-h-15">
+                                {{ course.description || 'No description available.' }}
                             </p>
+
+                            <!-- Meta Badges -->
+                            <div class="flex flex-wrap gap-2">
+                                <UBadge v-if="course.is_standalone" variant="soft">
+                                    Standalone
+                                </UBadge>
+                                <UBadge v-if="course.is_optional" variant="soft" color="neutral">
+                                    Optional
+                                </UBadge>
+                                <UBadge v-if="course.lang_id" variant="soft" color="info">
+                                    {{ course.lang_id.display_name }}
+                                </UBadge>
+                            </div>
                         </div>
-                        <UBadge :color="course.active ? 'success' : 'error'" variant="subtle" size="xs">
-                            {{ course.active ? 'Active' : 'Inactive' }}
-                        </UBadge>
-                    </div>
-                </template>
 
-                <!-- Card Body -->
-                <div class="space-y-4">
-                    <p class="text-sm text-neutral-600 dark:text-neutral-300 line-clamp-3">
-                        {{ course.description || 'No description available.' }}
-                    </p>
-
-                    <div class="flex flex-wrap gap-2">
-                        <UBadge v-if="course.is_standalone" variant="soft">Standalone</UBadge>
-                        <UBadge v-if="course.is_optional" variant="soft" color="neutral">Optional</UBadge>
-                        <UBadge v-if="course.lang_id" variant="soft" color="info">
-                            {{ course.lang_id.display_name }}
-                        </UBadge>
-                    </div>
-                </div>
-
-                <!-- Card Footer -->
-                <template #footer>
-                    <div class="flex items-center justify-between">
-                        <div class="text-sm font-medium">
-                            {{ course.currency_id?.display_name || 'IDR' }} {{ course.list_price }}
+                        <!-- ===== Price & Action ===== -->
+                        <div class="pt-4 flex items-center justify-between">
+                            <div class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                                {{ course.currency_id?.display_name || 'IDR' }} {{ course.list_price }}
+                            </div>
+                            <UButton size="sm" color="primary" variant="solid" class="min-w-24" @click.stop>
+                                View Detail
+                            </UButton>
                         </div>
-                        <UButton size="sm" color="primary" variant="outline">
-                            View Detail
-                        </UButton>
                     </div>
-                </template>
-            </UCard>
+                </UCard>
+            </NuxtLink>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="total > perPage" class="flex justify-center mt-8">
+            <UPagination v-model:page="page" :items-per-page="perPage" :total="total" size="sm" />
         </div>
     </div>
 </template>

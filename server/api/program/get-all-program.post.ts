@@ -1,5 +1,4 @@
 import { odoo } from '~/../server/services/odoo'
-import type { VitProgram } from '~/../server/types/odoo'
 
 export default defineEventHandler(async (event) => {
     const sessionId = getCookie(event, 'session_id')
@@ -30,10 +29,17 @@ export default defineEventHandler(async (event) => {
     }
 
     await odoo.getSessionInfo(sessionId)
+    const body = await readBody(event)
+    const page = Number(body.page || 1)
+    const limit = Number(body.limit || 9)
+    const offset = (page - 1) * limit
 
-    const response = await odoo.webSearchRead("vit.program", domain, specification, 80, sessionId)
+    const response = await odoo.webSearchRead("vit.program", domain, specification, limit, offset, sessionId)
 
     return {
-        data: response.data.result.records as VitProgram[]
+        data: {
+            records: response.data.result.records,
+            total: response.data.result.length
+        }
     }
 })
