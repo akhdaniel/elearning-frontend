@@ -8,7 +8,7 @@ interface ProgramQuery {
 
 export function useProgram() {
     const getAllProgram = async (query: ProgramQuery) => {
-        const res = await ofetch(`/api/program/get-all-program`, {
+        const res = await ofetch(`/api/program`, {
             method: "POST",
             credentials: "include",
             body: query

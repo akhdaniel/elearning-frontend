@@ -2,13 +2,10 @@
 <script setup lang="ts">
 import type { VitCourse } from '~/../server/types/odoo'
 import { useCourse } from '~/composables/useCourse'
+import { useBreadcrumb } from '~/composables/useBreadcrumb'
 
 definePageMeta({
-    layout: 'dashboard',
-    breadcrumb: [
-        { label: 'Dashboard', to: '/dashboard' },
-        { label: 'Course' }
-    ]
+    layout: 'dashboard'
 })
 
 useHead({
@@ -16,8 +13,8 @@ useHead({
 })
 
 const { getAllCourse } = useCourse()
+const { setBreadcrumb, clearBreadcrumb } = useBreadcrumb()
 
-const loading = ref(true)
 const courses = ref<VitCourse[]>([])
 const search = ref('')
 
@@ -25,35 +22,33 @@ const page = ref(1)
 const perPage = 9
 const total = ref(0)
 
-const fetchCourses = async () => {
-    loading.value = true
-    try {
-        const res = await getAllCourse({
-            page: page.value,
-            limit: perPage,
-            search: search.value
-        })
-        courses.value = res.records
-        total.value = res.total
-    } finally {
-        loading.value = false
+const { data, pending } = useAsyncData('courses', () => getAllCourse({
+    page: page.value,
+    limit: perPage,
+    search: search.value
+}), {
+    watch: [page, search]
+})
+
+watchEffect(() => {
+    if (data.value && 'records' in data.value) {
+        courses.value = (data.value as { records: VitCourse[]; total: number }).records
+        total.value = (data.value as { records: VitCourse[]; total: number }).total
+
+        setBreadcrumb([
+            { label: 'Dashboard', to: '/dashboard' },
+            { label: 'Course' },
+        ])
     }
-}
-
-onMounted(() => {
-    fetchCourses()
-})
-// Refetch saat page / search berubah
-watch([page, search], () => {
-    page.value = page.value < 1 ? 1 : page.value
-    fetchCourses()
 })
 
-// Reset page saat search
 watch(search, () => {
     page.value = 1
 })
 
+onBeforeUnmount(() => {
+    clearBreadcrumb()
+})
 </script>
 
 <template>
@@ -74,7 +69,7 @@ watch(search, () => {
         </div>
 
         <!-- Loading -->
-        <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-if="pending" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <USkeleton v-for="i in 6" :key="i" class="h-56 rounded-xl" />
         </div>
 

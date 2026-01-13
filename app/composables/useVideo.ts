@@ -8,13 +8,12 @@ interface VideoQuery {
 
 export function useVideo() {
     const getAllVideo = async (query: VideoQuery) => {
-        const res = await ofetch(`/api/video/get-all-video`, {
+        const res = await ofetch(`/api/video`, {
             method: "POST",
             credentials: "include",
             body: query
         })
         return res.data
     }
-
     return { getAllVideo }
 }

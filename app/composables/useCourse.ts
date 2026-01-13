@@ -1,6 +1,4 @@
 // composables/useCourse.ts :
-import { ofetch } from "ofetch"
-
 interface CourseQuery {
     page: number
     limit: number
@@ -9,7 +7,7 @@ interface CourseQuery {
 
 export function useCourse() {
     const getAllCourse = async (query: CourseQuery) => {
-        const res = await ofetch(`/api/course/get-all-course`, {
+        const res = await $fetch(`/api/course`, {
             method: "POST",
             credentials: "include",
             body: query
@@ -18,11 +16,11 @@ export function useCourse() {
     }
 
     const getCourseById = async (id: number) => {
-        const res = await ofetch(`/api/course/${id}`, {
+        const res = await $fetch(`/api/course/${id}`, {
             method: "GET",
             credentials: "include",
         })
-        return res.data.records
+        return res.data
     }
 
     return { getAllCourse, getCourseById }

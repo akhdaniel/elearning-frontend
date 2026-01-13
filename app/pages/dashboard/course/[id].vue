@@ -2,36 +2,36 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { useCourse } from '~/composables/useCourse'
+import { useBreadcrumb } from '~/composables/useBreadcrumb'
 import type { VitCourse } from '~/../server/types/odoo'
 
 definePageMeta({
     layout: 'dashboard',
-    breadcrumb: [
-        { label: 'Dashboard', to: '/dashboard' },
-        { label: 'Course', to: '/dashboard/course' },
-        { label: 'Detail' }
-    ]
 })
 
-const loading = ref(true)
 const course = ref<VitCourse | null>(null)
 const route = useRoute()
 const courseId = Number(route.params.id)
 const { getCourseById } = useCourse()
+const { setBreadcrumb, clearBreadcrumb } = useBreadcrumb()
 
-const fetchCourse = async () => {
-    loading.value = true
-    try {
-        const res = await getCourseById(courseId)
-        console.log("res : ", res);
-        course.value = res
-    } finally {
-        loading.value = false
+const { data, pending } = useAsyncData('course', () => getCourseById(courseId))
+watchEffect(() => {
+    if (data.value) {
+        course.value = data.value
+        setBreadcrumb([
+            { label: 'Dashboard', to: '/dashboard' },
+            { label: 'Course', to: '/dashboard/course' },
+            {
+                label: course.value?.name,
+                to: route.fullPath
+            }
+        ])
     }
-}
+})
 
-onMounted(() => {
-    fetchCourse()
+onBeforeUnmount(() => {
+    clearBreadcrumb()
 })
 </script>
 
@@ -39,7 +39,7 @@ onMounted(() => {
     <div class="space-y-8">
 
         <!-- Skeleton -->
-        <div v-if="loading" class="space-y-6">
+        <div v-if="pending" class="space-y-6">
             <USkeleton class="h-8 w-2/3" />
             <USkeleton class="h-4 w-1/3" />
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -124,16 +124,12 @@ onMounted(() => {
                             </li>
                         </ul>
                     </UCard>
-
                 </div>
 
                 <!-- RIGHT: Sidebar -->
                 <div class="space-y-6">
-
-                    <!-- Price Card -->
                     <UCard class="sticky top-6">
                         <div class="space-y-4">
-
                             <div>
                                 <p class="text-sm text-neutral-500">
                                     Course Fee
@@ -152,8 +148,6 @@ onMounted(() => {
                             <UButton size="lg" color="primary" block>
                                 Enroll Now
                             </UButton>
-
-                            <UDivider />
 
                             <ul class="text-sm space-y-2">
                                 <li class="flex justify-between">
@@ -179,7 +173,6 @@ onMounted(() => {
                             </ul>
                         </div>
                     </UCard>
-
                 </div>
             </div>
         </div>

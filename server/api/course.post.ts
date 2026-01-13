@@ -1,4 +1,4 @@
-// server/api/course/get-all-course.post.ts
+// server/api/course.post.ts
 import { odoo } from '~/../server/services/odoo'
 
 export default defineEventHandler(async (event) => {
@@ -65,11 +65,12 @@ export default defineEventHandler(async (event) => {
     }
 
     const response = await odoo.webSearchRead("vit.course", domain, specification, limit, offset, sessionId)
+    const count = await odoo.searchCount('vit.course', domain, sessionId)
 
     return {
         data: {
             records: response.data.result.records,
-            total: response.data.result.length
+            total: count
         }
     }
 })

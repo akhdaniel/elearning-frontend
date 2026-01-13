@@ -1,4 +1,4 @@
-// server/api/video/get-all-video.post.ts
+// server/api/video.post.ts
 import { odoo } from '~/../server/services/odoo'
 
 export default defineEventHandler(async (event) => {

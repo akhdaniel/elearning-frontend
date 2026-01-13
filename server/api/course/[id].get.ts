@@ -58,8 +58,6 @@ export default defineEventHandler(async (event) => {
     const response = await odoo.webRead("vit.course", ids, specification, sessionId)
 
     return {
-        data: {
-            records: response.data.result[0],
-        }
+        data: response.data.result[0],
     }
 })

@@ -2,10 +2,12 @@
 <script setup lang="ts">
 import type { NavigationMenuItem, DropdownMenuItem } from '@nuxt/ui'
 import type { BreadcrumbItem } from '@nuxt/ui'
+import { useBreadcrumb } from '~/composables/useBreadcrumb'
 import { useRoute } from 'vue-router'
 const route = useRoute()
 const authStore = useAuthStore()
 const toast = useToast()
+const { breadcrumbs } = useBreadcrumb()
 const collapsed = ref(false)
 const showLogoutConfirm = ref(false)
 
@@ -18,7 +20,7 @@ const sidebarMenuItems: NavigationMenuItem[] = [
     },
     {
         label: 'Program',
-        icon: 'i-lucide-graduation-cap',
+        icon: 'i-lucide-folder-closed',
         to: '/dashboard/program'
     },
     {
@@ -75,16 +77,9 @@ const navbarTitle = computed(() => {
     return findMenuLabelByPath(route.path) ?? 'Dashboard'
 })
 
-const breadcrumbs = computed<BreadcrumbItem[]>(() => {
-    const matched = route.matched
-
-    const crumbs = matched
-        .map(r => r.meta?.breadcrumb)
-        .flat()
-        .filter(Boolean) as BreadcrumbItem[]
-
-    return crumbs.length
-        ? crumbs
+const resolvedBreadcrumbs = computed<BreadcrumbItem[]>(() => {
+    return breadcrumbs.value?.length
+        ? breadcrumbs.value
         : [{ label: navbarTitle.value }]
 })
 
@@ -96,9 +91,17 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
             <!-- Sidebar -->
             <UDashboardSidebar v-model:collapsed="collapsed" :items="sidebarMenuItems" collapsible>
                 <template #header>
-                    <div class="h-14 flex items-center justify-center border-b">
-                        <span v-if="!collapsed" class="font-semibold text-primary">E‑Learning System</span>
-                        <span v-else class="font-bold text-primary">EL</span>
+                    <div class="flex flex-col items-center w-full gap-3">
+                        <!-- Icon + Title -->
+                        <div class="flex items-center justify-center w-full">
+                            <UIcon name="i-lucide-graduation-cap" class="size-6 text-primary" />
+                            <span v-if="!collapsed" class="font-semibold text-primary ml-2">
+                                E‑Learning System
+                            </span>
+                        </div>
+
+                        <!-- Separator -->
+                        <USeparator class="w-full" :ui="{ border: 'border-primary/30' }" />
                     </div>
                 </template>
 
@@ -122,7 +125,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
                         </template>
                     </UDashboardNavbar>
                     <UDashboardToolbar>
-                        <UBreadcrumb :items="breadcrumbs">
+                        <UBreadcrumb :items="resolvedBreadcrumbs">
                             <template #separator>
                                 <span class="mx-2 text-muted">/</span>
                             </template>

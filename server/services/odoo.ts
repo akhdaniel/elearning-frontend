@@ -160,6 +160,24 @@ export class Odoo {
             sessionId
         )
     }
+
+    async searchCount(model: string, domain: any[] = [], sessionId?: string) {
+        const res = await this.request(`/web/dataset/call_kw/${model}/search_count`,
+            {
+                method: 'POST',
+                body: {
+                    params: {
+                        model,
+                        method: 'search_count',
+                        args: [domain],
+                        kwargs: {}
+                    }
+                }
+            },
+            sessionId
+        )
+        return res.data.result as number
+    }
 }
 
 export const odoo = new Odoo()
