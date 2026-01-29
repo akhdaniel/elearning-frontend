@@ -16,5 +16,13 @@ export function useProgram() {
         return res.data
     }
 
-    return { getAllProgram }
+    const getProgram = async (page: number = 1, limit: number = 9) => {
+        return await $fetch(`/api/program`, {
+            method: "GET",
+            credentials: "include",
+            query: { page, limit }
+        })
+    }
+
+    return { getAllProgram, getProgram }
 }

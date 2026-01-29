@@ -11,6 +11,7 @@ export default defineEventHandler(async (event) => {
         list_price: {},
         is_standalone: {},
         is_optional: {},
+        topics: {},
         period_id: {
             fields: { display_name: {} }
         },

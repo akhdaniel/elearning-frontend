@@ -1,223 +1,353 @@
-<!-- pages/dashboard/course/[id].vue -->
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
+import type { VitContentPrompt, VitCoursePeriod, ResLang, ResCurrency, VitProgram, VitCourse } from '~/../server/types/odoo'
+import { useContentPrompt } from '~/composables/useContentPrompt'
 import { useCourse } from '~/composables/useCourse'
-import { useBreadcrumb } from '~/composables/useBreadcrumb'
-import type { VitCourse } from '~/../server/types/odoo'
-import type { AccordionItem } from '@nuxt/ui'
+import { useCoursePeriod } from '~/composables/useCoursePeriod'
+import { useResLang } from '~/composables/useResLang'
+import { useResCurrency } from '~/composables/useResCurrency'
+import { useProgram } from '~/composables/useProgram'
+
+const route = useRoute()
+const router = useRouter()
+const id = Number(route.params.id)
+const { setBreadcrumb, clearBreadcrumb } = useBreadcrumb()
+const { getAllContentPrompt } = useContentPrompt()
+const { getAllCoursePeriod } = useCoursePeriod()
+const { getAllResLang } = useResLang()
+const { getAllResCurrency } = useResCurrency()
+const { getProgram } = useProgram()
+const { getCourseById, updateCourse } = useCourse()
+const toast = useToast()
 
 definePageMeta({
-    layout: 'dashboard',
+    layout: 'dashboard'
 })
 
-const course = ref<VitCourse | null>(null)
-const route = useRoute()
-const courseId = Number(route.params.id)
-const { getCourseById } = useCourse()
-const { setBreadcrumb, clearBreadcrumb } = useBreadcrumb()
+useHead({
+    title: 'Edit Course | E-Learning System'
+})
 
-const { data, pending } = useAsyncData('course', () => getCourseById(courseId))
-watchEffect(() => {
-    if (data.value) {
-        console.log("data : ", data);
+const state = reactive({
+    name: '',
+    description: '',
+    active: true,
+    list_price: 0,
+    is_standalone: false,
+    is_optional: false,
+    topics: '',
+    period_id: null,
+    program_id: null,
+    prompt_id: null,
+    summary_prompt_id: null,
+    currency_id: null,
+    lang_id: null,
+})
 
-        course.value = data.value
-        setBreadcrumb([
-            { label: 'Dashboard', to: '/dashboard' },
-            { label: 'Course', to: '/dashboard/course' },
-            {
-                label: course.value?.name,
-                to: route.fullPath
-            }
-        ])
+const loading = ref(false)
+const fetching = ref(true)
+const topicsData = ref<any[]>([])
+
+const fetchCourseDetail = async () => {
+    try {
+        fetching.value = true
+        const res: VitCourse = await getCourseById(Number(id))
+        if (res) {
+            console.log("res : ", res);
+
+            Object.assign(state, {
+                name: res.name,
+                description: res.description || '',
+                active: res.active,
+                list_price: res.list_price,
+                is_standalone: res.is_standalone,
+                is_optional: res.is_optional,
+                topics: res.topics,
+                period_id: res.period_id && typeof res.period_id === 'object' ? (res.period_id as any).id : null,
+                program_id: res.program_id && typeof res.program_id === 'object' ? (res.program_id as any).id : null,
+                prompt_id: res.prompt_id && typeof res.prompt_id === 'object' ? (res.prompt_id as any).id : null,
+                summary_prompt_id: res.summary_prompt_id && typeof res.summary_prompt_id === 'object' ? (res.summary_prompt_id as any).id : null,
+                currency_id: res.currency_id && typeof res.currency_id === 'object' ? (res.currency_id as any).id : null,
+                lang_id: res.lang_id && typeof res.lang_id === 'object' ? (res.lang_id as any).id : null,
+            })
+            topicsData.value = res.topic_ids || []
+        }
+    } catch (error) {
+        toast.add({ title: 'Error', description: 'Failed to load course data', color: 'error', icon: "i-lucide-triangle-alert" })
+    } finally {
+        fetching.value = false
     }
+}
+
+const getItems = (videos: any[]) => {
+    return videos.map(v => ({
+        label: v.name,
+        icon: 'i-lucide-play-circle',
+        id: v.id
+    }))
+}
+
+const { data: contentPromptData, pending: pendingContentPromptData } = useAsyncData('content-prompt', () => getAllContentPrompt(), {
+    transform: (res: any) => {
+        return res.map((item: VitContentPrompt) => ({
+            id: item.id,
+            label: item.name,
+        }))
+    },
+    server: true,
 })
 
-const accordionItems = computed(() => {
-    if (!course.value?.topic_ids) return []
+const { data: coursePeriodData, pending: pendingCoursePeriodData } = useAsyncData('course-period', () => getAllCoursePeriod(), {
+    transform: (res: any) => {
+        return res.map((item: VitCoursePeriod) => ({
+            id: item.id,
+            label: item.name,
+        }))
+    },
+    server: true,
+})
 
-    return course.value.topic_ids.map((topic: any, index: number) => ({
-        label: topic.name,
-        defaultOpen: index === 0,
-        slot: 'topic-' + topic.id,
-        videoCount: topic.video_ids?.length || 0,
-        index: index + 1,
-    }))
+const { data: resLangData, pending: pendingResLangData } = useAsyncData('res-lang', () => getAllResLang(), {
+    transform: (res: any) => {
+        return res.map((item: ResLang) => ({
+            id: item.id,
+            label: item.name,
+        }))
+    },
+    server: true,
+})
+
+const { data: resCurrencyData, pending: pendingResCurrencyData } = useAsyncData('res-currency', () => getAllResCurrency(), {
+    transform: (res: any) => {
+        return res.map((item: ResCurrency) => ({
+            id: item.id,
+            label: item.name,
+        }))
+    },
+    server: true,
+})
+
+const { data: vitProgramData, pending: pendingVitProgramData } = useAsyncData('vit-program', () => getProgram(), {
+    transform: (res: any) => {
+        return res.map((item: VitProgram) => ({
+            id: item.id,
+            label: item.name,
+        }))
+    },
+    server: true,
+})
+
+onMounted(async () => {
+    await fetchCourseDetail()
+    setBreadcrumb([
+        { label: 'Dashboard', to: '/dashboard' },
+        { label: 'Course', to: '/dashboard/course' },
+        { label: `${state.name || id}` },
+    ])
 })
 
 onBeforeUnmount(() => {
     clearBreadcrumb()
 })
+
+const onUpdateCourse = async () => {
+    loading.value = true
+    try {
+        await updateCourse(id, state)
+        toast.add({ title: "Updated", description: "Course updated successfully", color: "success", icon: "i-lucide-check-circle" })
+    } catch (error) {
+        toast.add({ title: 'Error', description: 'Update failed', color: 'error' })
+    } finally {
+        loading.value = false
+    }
+}
 </script>
 
 <template>
-    <div class="space-y-8">
-
-        <!-- Skeleton -->
-        <div v-if="pending" class="space-y-6">
-            <USkeleton class="h-8 w-2/3" />
-            <USkeleton class="h-4 w-1/3" />
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <USkeleton class="h-64 lg:col-span-2" />
-                <USkeleton class="h-64" />
+    <div class="mx-auto scrollbar-hide">
+        <div class="mb-8 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold">Edit Course</h2>
+                <p class="text-neutral-500">Modify the course details and save changes.</p>
             </div>
+            <UButton icon="i-lucide-arrow-left" variant="ghost" @click="router.back()">Back</UButton>
         </div>
 
-        <!-- Content -->
-        <div v-else-if="course" class="space-y-8">
+        <div v-if="fetching" class="space-y-4">
+            <USkeleton class="h-12 w-full" />
+            <USkeleton class="h-64 w-full" />
+        </div>
 
-            <!-- Header / Hero -->
-            <div class="space-y-4">
-                <div class="flex flex-wrap items-center gap-2">
-                    <UBadge :color="course.active ? 'success' : 'error'" variant="subtle">
-                        {{ course.active ? 'Active' : 'Inactive' }}
-                    </UBadge>
-
-                    <UBadge v-if="course.is_standalone" variant="soft">
-                        Standalone
-                    </UBadge>
-
-                    <UBadge v-if="course.lang_id" color="info" variant="soft">
-                        {{ course.lang_id.display_name }}
-                    </UBadge>
-                </div>
-
-                <h1 class="text-3xl font-bold tracking-tight">
-                    {{ course.name }}
-                </h1>
-
-                <p class="text-neutral-600 dark:text-neutral-300 max-w-3xl">
-                    {{ course.description }}
-                </p>
-            </div>
-
-            <!-- Main Layout -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                <!-- LEFT: Course Content -->
-                <div class="lg:col-span-2 space-y-8">
-
-                    <!-- About -->
+        <UForm v-else :state="state" class="space-y-6" @submit="onUpdateCourse">
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-1 space-y-6">
                     <UCard>
                         <template #header>
-                            <h3 class="text-lg font-semibold">About this course</h3>
+                            <h3 class="font-semibold">Basic Information</h3>
                         </template>
-
-                        <p class="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
-                            {{ course.description }}
-                        </p>
+                        <div class="grid gap-4">
+                            <div class="space-y-4">
+                                <UFormField label="Course Name" name="name" required>
+                                    <UInput v-model="state.name" class="w-full" />
+                                </UFormField>
+                                <UFormField label="Description" name="description">
+                                    <UTextarea v-model="state.description" autoresize class="w-full" />
+                                </UFormField>
+                            </div>
+                        </div>
                     </UCard>
 
-                    <!-- Videos / Lessons -->
-                    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+                    <UCard>
                         <template #header>
-                            <div class="flex items-center justify-between">
-                                <h3 class="text-lg font-semibold">Course Content</h3>
-                                <span class="text-sm text-neutral-500">
-                                    {{ course.topic_ids?.length || 0 }} Topics
-                                </span>
-                            </div>
+                            <h3 class="font-semibold">Prompt</h3>
                         </template>
+                        <div class="grid gap-4">
+                            <div class="space-y-4">
+                                <UFormField label="Prompt" name="prompt_id">
+                                    <USelectMenu v-model="state.prompt_id" :items="contentPromptData"
+                                        :loading="pendingContentPromptData" :options="contentPromptData" value-key="id"
+                                        class="w-full" />
+                                </UFormField>
+                                <UFormField label="Summary Prompt" name="summary_prompt_id">
+                                    <USelectMenu v-model="state.summary_prompt_id" :items="contentPromptData"
+                                        :loading="pendingContentPromptData" :options="contentPromptData" value-key="id"
+                                        class="w-full" />
+                                </UFormField>
+                            </div>
+                        </div>
+                    </UCard>
 
-                        <UAccordion :items="accordionItems" multiple :ui="{ trailingIcon: 'px-4 mr-4' }">
-                            <template #default="{ item, open }">
-                                <UButton color="neutral" variant="ghost" block
-                                    class="rounded-none py-4 justify-start cursor-pointer">
-                                    <div class="flex items-center gap-3 text-left w-full">
-                                        <span class="text-xs font-bold text-neutral-400 w-5">{{ item.index }}</span>
-                                        <div class="flex-1">
-                                            <p class="text-sm font-bold text-neutral-900 dark:text-white">{{ item.label
-                                                }}</p>
-                                            <p class="text-xs text-neutral-500">{{ item.videoCount }} Videos</p>
-                                        </div>
-                                    </div>
-                                </UButton>
-                            </template>
-
-                            <template v-for="topic in course.topic_ids" :key="topic.id" #[`topic-${topic.id}`]>
-                                <div
-                                    class="bg-neutral-50 dark:bg-neutral-900/50 px-4 py-2 border-b border-neutral-200 dark:border-neutral-800">
-                                    <ul class="space-y-1">
-                                        <li v-for="video in topic.video_ids" :key="video.id"
-                                            class="flex items-center justify-between py-2 px-3 rounded-md hover:bg-white dark:hover:bg-neutral-800 transition-colors group">
-                                            <div class="flex items-center gap-3">
-                                                <UIcon name="i-heroicons-play-circle"
-                                                    class="w-5 h-5 text-primary-500 opacity-70 group-hover:opacity-100" />
-                                                <span class="text-sm text-neutral-700 dark:text-neutral-300">
-                                                    {{ video.name }}
-                                                </span>
-                                            </div>
-
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-xs text-neutral-400">10:00</span>
-                                                <UButton icon="i-heroicons-play-20-solid" size="xs" color="primary"
-                                                    variant="soft" label="Watch"
-                                                    class="opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </template>
-                        </UAccordion>
+                    <UCard>
+                        <template #header>
+                            <h3 class="font-semibold">Other Information</h3>
+                        </template>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <UFormField label="Program" name="program_id">
+                                <USelectMenu v-model="state.program_id" :items="vitProgramData"
+                                    :options="vitProgramData" :loading="pendingVitProgramData" value-key="id"
+                                    option-attribute="label" placeholder="Select Program" class="w-full" />
+                            </UFormField>
+                            <UFormField label="Language" name="lang_id">
+                                <USelectMenu v-model="state.lang_id" :items="resLangData" :options="resLangData"
+                                    :loading="pendingResLangData" value-key="id" option-attribute="label"
+                                    placeholder="Select Language" class="w-full" />
+                            </UFormField>
+                            <UFormField label="Period" name="period_id">
+                                <USelectMenu v-model="state.period_id" :items="coursePeriodData"
+                                    :options="coursePeriodData" :loading="pendingCoursePeriodData" value-key="id"
+                                    option-attribute="label" placeholder="Select Period" class="w-full" />
+                            </UFormField>
+                            <UFormField label="Currency" name="currency_id">
+                                <USelectMenu v-model="state.currency_id" :items="resCurrencyData"
+                                    :options="resCurrencyData" :loading="pendingResCurrencyData" value-key="id"
+                                    option-attribute="label" placeholder="Select Currency" class="w-full" />
+                            </UFormField>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div class="flex flex-col gap-4 bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-lg">
+                                <UCheckbox v-model="state.active" label="Course is Active" />
+                                <UCheckbox v-model="state.is_standalone" label="Standalone" />
+                            </div>
+                            <UFormField label="Price" name="list_price">
+                                <UInput v-model="state.list_price" type="number" icon="i-heroicons-banknotes" />
+                            </UFormField>
+                        </div>
                     </UCard>
                 </div>
 
-                <!-- RIGHT: Sidebar -->
-                <div class="space-y-6">
-                    <UCard class="sticky top-6">
-                        <div class="space-y-4">
-                            <div>
-                                <p class="text-sm text-neutral-500">
-                                    Course Fee
-                                </p>
-                                <p class="text-2xl font-bold">
-                                    <span v-if="course.list_price === 0">
-                                        Free
-                                    </span>
-                                    <span v-else>
-                                        {{ course.currency_id?.display_name || 'IDR' }}
-                                        {{ course.list_price }}
-                                    </span>
-                                </p>
-                            </div>
+                <div class="w-full md:w-1/2 flex flex-col">
+                    <UCard class="flex-1 flex flex-col">
+                        <template #header>
+                            <h3 class="font-semibold">Draft Topic</h3>
+                        </template>
 
-                            <UButton size="lg" color="primary" block>
-                                Enroll Now
-                            </UButton>
-
-                            <ul class="text-sm space-y-2">
-                                <li class="flex justify-between">
-                                    <span class="text-neutral-500">Type</span>
-                                    <span class="font-medium">
-                                        {{ course.is_standalone ? 'Standalone' : 'Program Based' }}
-                                    </span>
-                                </li>
-
-                                <li class="flex justify-between">
-                                    <span class="text-neutral-500">Language</span>
-                                    <span class="font-medium">
-                                        {{ course.lang_id?.display_name || '-' }}
-                                    </span>
-                                </li>
-
-                                <li class="flex justify-between">
-                                    <span class="text-neutral-500">Topic</span>
-                                    <span class="font-medium">
-                                        {{ course.topic_ids?.length || 0 }}
-                                    </span>
-                                </li>
-
-                                <li class="flex justify-between">
-                                    <span class="text-neutral-500">Video</span>
-                                    <span class="font-medium">
-                                        {{ course.video_ids?.length || 0 }}
-                                    </span>
-                                </li>
-                            </ul>
+                        <div class="h-full min-h-100 flex flex-col">
+                            <UFormField label="Topics" name="topics" class="h-full flex flex-col"
+                                :ui="{ container: 'flex-1 flex flex-col' }">
+                                <UTextarea v-model="state.topics" placeholder="Topics draft will be generated here..."
+                                    class="flex-1 w-full" :rows="30" variant="outline"
+                                    :ui="{ base: 'h-full resize-none' }" />
+                            </UFormField>
                         </div>
                     </UCard>
                 </div>
             </div>
-        </div>
+
+            <div class="flex justify-end gap-3">
+                <UButton color="neutral" variant="ghost" label="Cancel" @click="navigateTo('/dashboard/course')" />
+                <UButton type="submit" color="primary" label="Update Changes" :loading="loading" class="px-8" />
+            </div>
+
+            <div class="space-y-6">
+                <UCard>
+                    <template #header>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <UIcon name="i-lucide-layers" class="w-5 h-5 text-primary" />
+                                <h3 class="font-semibold text-lg">Course Curriculum</h3>
+                            </div>
+                            <UBadge variant="soft" color="primary">{{ topicsData.length }} Topics</UBadge>
+                        </div>
+                    </template>
+
+                    <div v-if="topicsData.length === 0" class="py-10 text-center">
+                        <UIcon name="i-lucide-book-open" class="w-12 h-12 mx-auto text-neutral-400 mb-2" />
+                        <p class="text-neutral-500">No topics found for this course.</p>
+                    </div>
+
+                    <div v-else class="space-y-4">
+                        <UAccordion :items="topicsData.map(topic => ({
+                            label: topic.name,
+                            slot: 'content',
+                            description: `${topic.video_ids?.length || 0} Videos`,
+                            videos: topic.video_ids
+                        }))" multiple variant="ghost">
+                            <template #default="{ item, open }">
+                                <UButton color="neutral" variant="ghost"
+                                    class="border-b border-neutral-100 dark:border-neutral-800 py-4 px-2 hover:bg-gray-800 w-full">
+                                    <template #leading>
+                                        <div class="bg-neutral-800 text-primary p-1.5 rounded-md">
+                                            <UIcon name="i-lucide-folder-closed" v-if="!open" />
+                                            <UIcon name="i-lucide-folder-open" v-else />
+                                        </div>
+                                    </template>
+
+                                    <div class="text-left flex-1">
+                                        <p class="font-medium text-neutral-900 dark:text-white">{{ item.label }}</p>
+                                        <p class="text-xs text-neutral-500">{{ item.description }}</p>
+                                    </div>
+
+                                    <template #trailing>
+                                        <UIcon name="i-heroicons-chevron-right-20-solid"
+                                            class="w-5 h-5 transform transition-transform duration-200"
+                                            :class="[open && 'rotate-90']" />
+                                    </template>
+                                </UButton>
+                            </template>
+
+                            <template #content="{ item }">
+                                <div class="pl-12 pr-4 pb-4 space-y-2">
+                                    <div v-for="video in item.videos" :key="video.id"
+                                        class="group flex items-center justify-between p-3 rounded-lg border border-transparent hover:border-neutral-200 hover:bg-white dark:hover:bg-neutral-900 transition-all">
+                                        <div class="flex items-center gap-3">
+                                            <UIcon name="i-lucide-play-circle"
+                                                class="text-neutral-400 group-hover:text-primary transition-colors" />
+                                            <span
+                                                class="text-sm text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white">
+                                                {{ video.name }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <UBadge size="xs" variant="subtle" color="neutral">ID: {{ video.id }}
+                                            </UBadge>
+                                            <UButton icon="i-lucide-pencil" size="xs" variant="ghost" color="neutral" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </UAccordion>
+                    </div>
+                </UCard>
+            </div>
+        </UForm>
     </div>
 </template>

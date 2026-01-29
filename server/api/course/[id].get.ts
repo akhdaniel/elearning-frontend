@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
         list_price: {},
         is_standalone: {},
         is_optional: {},
+        topics: {},
         period_id: {
             fields: { display_name: {} }
         },
@@ -50,15 +51,6 @@ export default defineEventHandler(async (event) => {
                             fields: { display_name: {} }
                         },
                     }
-                },
-            }
-        },
-        video_ids: {
-            fields: {
-                id: {},
-                name: {},
-                topic_id: {
-                    fields: { display_name: {} }
                 },
             }
         },

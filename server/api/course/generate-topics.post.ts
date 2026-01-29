@@ -1,4 +1,4 @@
-// server/api/course.post.ts
+// server/api/course/generate-topics.post.ts
 import { odoo } from '~/../server/services/odoo'
 
 export default defineEventHandler(async (event) => {
@@ -13,12 +13,14 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
     const response = await odoo.callKw({
         model: "vit.course",
-        method: "create",
+        method: "action_generate_topics",
         args: [body],
         sessionId: sessionId
     })
+    console.log("response : ", response);
+
     return {
         success: true,
-        message: "Course created successfully",
+        message: "Topics generated successfully",
     }
 })

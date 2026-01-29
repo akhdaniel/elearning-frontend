@@ -1,18 +1,19 @@
 // composables/useCourse.ts :
-interface CourseQuery {
-    page: number
-    limit: number
-    search?: string
-}
-
 export function useCourse() {
-    const createCourse = async (query: CourseQuery) => {
-        const res = await $fetch(`/api/course`, {
+    const createCourse = async (payload: any) => {
+        return await $fetch(`/api/course`, {
             method: "POST",
             credentials: "include",
-            body: query
+            body: payload
         })
-        return res.data
+    }
+
+    const updateCourse = async (id: number, payload: any) => {
+        return await $fetch(`/api/course/${id}`, {
+            method: "PATCH",
+            credentials: "include",
+            body: payload
+        })
     }
 
     const getAllCourse = async (page: number = 1, limit: number = 10, search: string) => {
@@ -30,5 +31,13 @@ export function useCourse() {
         })
     }
 
-    return { createCourse, getAllCourse, getCourseById }
+    const generateTopics = async (payload: any) => {
+        return await $fetch(`/api/course/generate-topics`, {
+            method: "POST",
+            credentials: "include",
+            body: payload
+        })
+    }
+
+    return { createCourse, updateCourse, getAllCourse, getCourseById, generateTopics }
 }

@@ -1,4 +1,4 @@
-// server/api/course.post.ts
+// server/api/course/[id].patch.ts
 import { odoo } from '~/../server/services/odoo'
 
 export default defineEventHandler(async (event) => {
@@ -11,14 +11,21 @@ export default defineEventHandler(async (event) => {
     }
     await odoo.getSessionInfo(sessionId)
     const body = await readBody(event)
+    const id = Number(event.context.params!.id)
+    console.log("body : ", body);
+    console.log("id : ", id);
+
     const response = await odoo.callKw({
         model: "vit.course",
-        method: "create",
-        args: [body],
+        method: "write",
+        args: [[id], body],
         sessionId: sessionId
     })
+    console.log("response update : ", response);
+
     return {
         success: true,
-        message: "Course created successfully",
+        message: "Course updated successfully",
+        data: response
     }
 })

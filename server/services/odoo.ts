@@ -141,7 +141,7 @@ export class Odoo {
         )
     }
 
-    async callKw(model: string, method: string, args?: any[], kwargs?: any, sessionId?: string) {
+    async callKw({ model, method, args = [], kwargs = {}, sessionId }: { model: string, method: string, args?: any[], kwargs?: any, sessionId: string }) {
         return this.request(`/web/dataset/call_kw/${model}/${method}`,
             {
                 method: 'POST',

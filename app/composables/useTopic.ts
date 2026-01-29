@@ -10,7 +10,7 @@ export function useTopic() {
 
     const createTopic = async (payload: any) => {
         return await $fetch(`/api/topic`, {
-            method: "GET",
+            method: "POST",
             credentials: "include",
             body: { data: payload }
         })
