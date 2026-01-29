@@ -47,6 +47,24 @@ export type VitCourse = {
     product_fee_id: object,
     currency_id: any,
     lang_id: any,
+    topic_ids: any
+    video_ids: any
+}
+
+export type VitTopic = {
+    id: number
+    name: string
+    sequence: number
+    is_quiz: boolean
+    is_optional: boolean
+    is_published: boolean
+    description: string
+    image: string
+    active: boolean
+    quiz_content: string
+    course_id: any
+    survey_id: any
+    quiz_prompt_id: any
     video_ids: any
 }
 
@@ -90,4 +108,23 @@ export type VitVideo = {
     doc_cover: string,
     doc_file: string,
     pdf_link: string,
+}
+
+export interface VitCoursePeriod {
+    id: number
+    name: string
+    start_date: string
+    end_date: string
+    program_id: any
+}
+
+export interface VitContentPrompt {
+    id: number
+    name: string
+    display_name: string
+    system_prompt: string
+    user_prompt: string
+    active: boolean
+    gpt_model_id: any
+    lang_id: any
 }

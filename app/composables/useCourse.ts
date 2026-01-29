@@ -6,7 +6,7 @@ interface CourseQuery {
 }
 
 export function useCourse() {
-    const getAllCourse = async (query: CourseQuery) => {
+    const createCourse = async (query: CourseQuery) => {
         const res = await $fetch(`/api/course`, {
             method: "POST",
             credentials: "include",
@@ -15,13 +15,20 @@ export function useCourse() {
         return res.data
     }
 
+    const getAllCourse = async (page: number = 1, limit: number = 10, search: string) => {
+        return await $fetch(`/api/course`, {
+            method: "GET",
+            credentials: "include",
+            query: { page, limit, search }
+        })
+    }
+
     const getCourseById = async (id: number) => {
-        const res = await $fetch(`/api/course/${id}`, {
+        return await $fetch(`/api/course/${id}`, {
             method: "GET",
             credentials: "include",
         })
-        return res.data
     }
 
-    return { getAllCourse, getCourseById }
+    return { createCourse, getAllCourse, getCourseById }
 }

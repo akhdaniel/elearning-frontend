@@ -35,6 +35,24 @@ export default defineEventHandler(async (event) => {
         lang_id: {
             fields: { display_name: {} }
         },
+        topic_ids: {
+            fields: {
+                id: {},
+                name: {},
+                course_id: {
+                    fields: { display_name: {} }
+                },
+                video_ids: {
+                    fields: {
+                        id: {},
+                        name: {},
+                        topic_id: {
+                            fields: { display_name: {} }
+                        },
+                    }
+                },
+            }
+        },
         video_ids: {
             fields: {
                 id: {},
@@ -57,7 +75,5 @@ export default defineEventHandler(async (event) => {
     const ids: any[] = [courseId]
     const response = await odoo.webRead("vit.course", ids, specification, sessionId)
 
-    return {
-        data: response.data.result[0],
-    }
+    return response.data.result[0]
 })

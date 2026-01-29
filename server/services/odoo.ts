@@ -1,6 +1,5 @@
 // server/services/odoo.ts
 import { $fetch } from 'ofetch'
-import type { OdooLoginResult, OdooSessionInfo } from '~/../server/types/odoo'
 
 export class Odoo {
     private baseUrl: string
@@ -142,20 +141,18 @@ export class Odoo {
         )
     }
 
-    async webSave(model: string, ids: any[], specification = {}, sessionId?: string) {
-        return this.request(`/web/dataset/call_kw/${model}/web_save`,
+    async callKw(model: string, method: string, args?: any[], kwargs?: any, sessionId?: string) {
+        return this.request(`/web/dataset/call_kw/${model}/${method}`,
             {
                 method: 'POST',
                 body: {
                     params: {
                         model,
-                        method: 'web_save',
-                        args: ids,
-                        kwargs: {
-                            specification
-                        }
-                    }
-                }
+                        method,
+                        args,
+                        kwargs,
+                    },
+                },
             },
             sessionId
         )

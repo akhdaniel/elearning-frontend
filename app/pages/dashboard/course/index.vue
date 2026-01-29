@@ -22,18 +22,14 @@ const page = ref(1)
 const perPage = 9
 const total = ref(0)
 
-const { data, pending } = useAsyncData('courses', () => getAllCourse({
-    page: page.value,
-    limit: perPage,
-    search: search.value
-}), {
+const { data, pending } = useAsyncData('courses', () => getAllCourse(page.value, perPage, search.value), {
     watch: [page, search]
 })
 
 watchEffect(() => {
-    if (data.value && 'records' in data.value) {
-        courses.value = (data.value as { records: VitCourse[]; total: number }).records
-        total.value = (data.value as { records: VitCourse[]; total: number }).total
+    if (data.value) {
+        courses.value = (data.value.data as { records: VitCourse[]; total: number }).records
+        total.value = (data.value.data as { records: VitCourse[]; total: number }).total
 
         setBreadcrumb([
             { label: 'Dashboard', to: '/dashboard' },
@@ -62,9 +58,12 @@ onBeforeUnmount(() => {
                 </p>
             </div>
 
-            <div class="flex gap-3 w-full md:w-auto">
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                 <UInput v-model="search" placeholder="Search course..." icon="i-heroicons-magnifying-glass"
                     class="w-full md:w-64" />
+
+                <UButton icon="i-heroicons-plus" color="primary" variant="solid" label="Add Course"
+                    class="whitespace-nowrap cursor-pointer" @click="navigateTo('/dashboard/course/create')" />
             </div>
         </div>
 

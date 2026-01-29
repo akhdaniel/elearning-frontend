@@ -1,9 +1,8 @@
-// server/api/course.post.ts
 import { odoo } from '~/../server/services/odoo'
 
 export default defineEventHandler(async (event) => {
     const sessionId = getCookie(event, 'session_id')
-
+    const query = getQuery(event)
     const specification = {
         id: {},
         name: {},
@@ -70,20 +69,17 @@ export default defineEventHandler(async (event) => {
     }
 
     await odoo.getSessionInfo(sessionId)
-    const body = await readBody(event)
-    const page = Number(body.page || 1)
-    const limit = Number(body.limit || 9)
-    const search = body.search || ''
-
+    const page = Number(query.page) || 1
+    const limit = Number(query.limit) || 9
     const offset = (page - 1) * limit
-
+    const search = query.search || ''
     const domain: any[] = []
     if (search) {
         domain.push(['name', 'ilike', search])
     }
 
     const response = await odoo.webSearchRead("vit.course", domain, specification, limit, offset, sessionId)
-    const count = await odoo.searchCount('vit.course', domain, sessionId)
+    const count = await odoo.searchCount("vit.course", domain, sessionId)
 
     return {
         data: {
