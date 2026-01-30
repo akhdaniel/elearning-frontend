@@ -107,9 +107,13 @@ onBeforeUnmount(() => {
 const onCreateCourse = async () => {
     loading.value = true
     try {
-        await createCourse(state)
+        const response: any = await createCourse(state)
         toast.add({ title: "Success", description: "Course created successfully", color: "success", icon: "i-lucide-check-circle" })
-        navigateTo('/dashboard/course/create')
+        if (response.data) {
+            navigateTo(`/dashboard/course/${response.data}`)
+        } else {
+            navigateTo(`/dashboard/course`)
+        }
     } catch (error) {
         console.log("error : ", error);
         toast.add({ title: 'Error', description: 'Failed to create course', color: 'error', icon: "i-lucide-triangle-alert" })

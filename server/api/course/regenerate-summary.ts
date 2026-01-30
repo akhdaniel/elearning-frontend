@@ -15,14 +15,14 @@ export default defineEventHandler(async (event) => {
 
     const response = await odoo.callButton({
         model: "vit.course",
-        method: "action_generate_topics",
+        method: "regenerate_summary",
         args: [[courseId]],
         sessionId: sessionId
     })
 
     return {
         success: true,
-        message: "Topics generated successfully",
+        message: "Summary regenerated successfully",
         data: response
     }
 })

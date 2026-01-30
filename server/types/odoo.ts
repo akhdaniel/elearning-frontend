@@ -1,7 +1,5 @@
 // server/types/odoo.ts :
 
-import { StringOrVNode } from "@nuxt/ui"
-
 export type OdooLoginResult = {
     uid: number
     name: string
@@ -43,6 +41,7 @@ export interface VitCourse {
     is_standalone: boolean
     is_optional: boolean
     topics: string
+    summary: string
     period_id: object
     program_id: any
     prompt_id: object
@@ -74,6 +73,7 @@ export type VitTopic = {
 export type VitVideo = {
     id: number
     name: string
+    description: string
     sequence: number
     keywords: string
     coding: string
@@ -91,8 +91,8 @@ export type VitVideo = {
     topic_id: object,
     program_id: object,
     course_id: object,
-    audio_voice_id: object,
-    prompt_id: object,
+    audio_voice_id: any,
+    prompt_id: any,
     survey_id: object,
     currency_id: object,
     product_fee_id: object,
@@ -138,6 +138,11 @@ export interface ResLang {
 }
 
 export interface ResCurrency {
+    id: number
+    name: String
+}
+
+export interface VitAudioVoice {
     id: number
     name: String
 }

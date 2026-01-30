@@ -1,4 +1,4 @@
-// server/api/course/generate-topics.post.ts
+// server/api/topic/[id].patch.ts
 import { odoo } from '~/../server/services/odoo'
 
 export default defineEventHandler(async (event) => {
@@ -11,18 +11,21 @@ export default defineEventHandler(async (event) => {
     }
     await odoo.getSessionInfo(sessionId)
     const body = await readBody(event)
-    const courseId = Number(body)
+    const id = Number(event.context.params!.id)
+    console.log("body : ", body);
+    console.log("id : ", id);
 
-    const response = await odoo.callButton({
-        model: "vit.course",
-        method: "action_generate_topics",
-        args: [[courseId]],
+    const response = await odoo.callKw({
+        model: "vit.topic",
+        method: "write",
+        args: [[id], body],
         sessionId: sessionId
     })
+    console.log("response update : ", response);
 
     return {
         success: true,
-        message: "Topics generated successfully",
+        message: "Topic updated successfully",
         data: response
     }
 })

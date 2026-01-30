@@ -39,5 +39,21 @@ export function useCourse() {
         })
     }
 
-    return { createCourse, updateCourse, getAllCourse, getCourseById, generateTopics }
+    const regenerateSummary = async (payload: any) => {
+        return await $fetch(`/api/course/regenerate-summary`, {
+            method: "POST",
+            credentials: "include",
+            body: payload
+        })
+    }
+
+    const createContent = async (payload: any) => {
+        return await $fetch(`/api/course/create-content`, {
+            method: "POST",
+            credentials: "include",
+            body: payload
+        })
+    }
+
+    return { createCourse, updateCourse, getAllCourse, getCourseById, generateTopics, regenerateSummary, createContent }
 }

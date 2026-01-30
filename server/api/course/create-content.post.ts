@@ -1,4 +1,4 @@
-// server/api/course/generate-topics.post.ts
+// server/api/course/create-content.post.ts
 import { odoo } from '~/../server/services/odoo'
 
 export default defineEventHandler(async (event) => {
@@ -15,14 +15,17 @@ export default defineEventHandler(async (event) => {
 
     const response = await odoo.callButton({
         model: "vit.course",
-        method: "action_generate_topics",
+        method: "action_create_content",
         args: [[courseId]],
         sessionId: sessionId
     })
 
+    console.log("response : ", response);
+
+
     return {
         success: true,
-        message: "Topics generated successfully",
+        message: "Content created successfully",
         data: response
     }
 })

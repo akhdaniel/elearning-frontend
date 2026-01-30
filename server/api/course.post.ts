@@ -20,5 +20,6 @@ export default defineEventHandler(async (event) => {
     return {
         success: true,
         message: "Course created successfully",
+        data: response.data.result
     }
 })

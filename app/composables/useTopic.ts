@@ -15,5 +15,14 @@ export function useTopic() {
             body: { data: payload }
         })
     }
-    return { getAllTopic, createTopic }
+
+    const updateTopic = async (id: number, payload: any) => {
+        return await $fetch(`/api/topic/${id}`, {
+            method: "PATCH",
+            credentials: "include",
+            body: payload
+        })
+    }
+
+    return { getAllTopic, createTopic, updateTopic }
 }

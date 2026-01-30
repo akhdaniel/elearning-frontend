@@ -158,6 +158,24 @@ export class Odoo {
         )
     }
 
+    async callButton({ model, method, args = [], kwargs = {}, sessionId }: { model: string, method: string, args?: any[], kwargs?: any, sessionId: string }) {
+        return this.request(`/web/dataset/call_button`,
+            {
+                method: "POST",
+                body: {
+                    jsonrpc: "2.0",
+                    params: {
+                        model,
+                        method,
+                        args,
+                        kwargs,
+                    },
+                },
+            },
+            sessionId
+        )
+    }
+
     async searchCount(model: string, domain: any[] = [], sessionId?: string) {
         const res = await this.request(`/web/dataset/call_kw/${model}/search_count`,
             {
